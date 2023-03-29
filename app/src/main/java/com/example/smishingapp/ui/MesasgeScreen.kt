@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,7 +23,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.smishingapp.data.chat
-import com.example.smishingapp.data.message_list
 import com.example.smishingapp.ui.chat.ChatScreen
 import com.example.smishingapp.ui.theme.SmishingAppTheme
 import kotlinx.coroutines.launch
@@ -126,22 +126,24 @@ fun MessageTopAppBar(modifier: Modifier = Modifier,
 
 @Preview
 @Composable
-fun MessageScreenPreview(){
+fun MessageListPreview(){
     SmishingAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            MyAppNavHost(modifier = Modifier)
+            MessageList(navController = rememberNavController())
         }
     }
 }
 
 @Composable
-fun MessageList(navController: NavHostController) {
-        LazyColumn{
-            message_list.forEach { (sender, message) ->
+fun MessageList(navController: NavHostController,messageModel: MessageModel = MessageModel()) {
+    val context = LocalContext.current
+    var messageList: MutableList<Message> = messageModel.getAllMessage(context)
+    LazyColumn{
+            messageList.forEach {message->
                 items(1) {
                     MessageView(message = message,navController)
                 }
@@ -153,7 +155,7 @@ fun MessageList(navController: NavHostController) {
 fun MessageView(message: Message,navController: NavHostController){
     Card(modifier = Modifier
         .padding(4.dp)
-        .clickable(onClick = {navController.navigate("Chat")}),
+        .clickable(onClick = { navController.navigate("Chat") }),
         elevation = 4.dp) {
         Row(modifier = Modifier
             .fillMaxWidth()
