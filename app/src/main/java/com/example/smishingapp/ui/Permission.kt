@@ -19,7 +19,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SinglePermission(
-    messageModel: MessageModel = viewModel()
+    messageModel: MessageViewModel = viewModel()
 ) {
     val permissionState =
         rememberPermissionState(permission = Manifest.permission.READ_SMS)

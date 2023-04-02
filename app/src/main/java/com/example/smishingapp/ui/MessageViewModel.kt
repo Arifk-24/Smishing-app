@@ -27,7 +27,7 @@ fun addElement(myHashMap:HashMap<String,MutableList<Message> >, myKey:String , n
     }
 }
 
-class MessageModel:ViewModel() {
+class MessageViewModel:ViewModel() {
 
     private val _uiState = MutableStateFlow(MessageUiState())
     val uiState: StateFlow<MessageUiState> = _uiState.asStateFlow()

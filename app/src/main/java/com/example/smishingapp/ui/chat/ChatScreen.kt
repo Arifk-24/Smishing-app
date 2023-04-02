@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -86,7 +84,7 @@ fun ChatScreenView(
     }
 }
 @Composable
-fun ChatViewLeft(messageChat: Message)
+fun ChatViewLeft(message: Message)
 {
     Column(verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.End
@@ -97,7 +95,7 @@ fun ChatViewLeft(messageChat: Message)
         val current = Calendar.DATE
         val format = SimpleDateFormat("MM/dd, yy", Locale.getDefault())
         val date = format.format(current)
-        val formattedDate = format.format(messageChat.date)
+        val formattedDate = format.format(message.date)
         if(date == formattedDate)
         {
             Text("Today", fontSize = 15.sp)
@@ -109,13 +107,13 @@ fun ChatViewLeft(messageChat: Message)
             shape = RoundedCornerShape(15.dp),
             backgroundColor = MaterialTheme.colors.secondary,
         ){
-            Text(messageChat.text,
+            Text(message.text,
                 Modifier.padding(10.dp,10.dp),textAlign = TextAlign.Justify)
         }
     }
 }
 @Composable
-fun ChatView(messageChat: Message) {
+fun ChatView(message: Message) {
     Column(verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start
         , modifier = Modifier
@@ -124,11 +122,11 @@ fun ChatView(messageChat: Message) {
         val current = Calendar.DATE
         var format = SimpleDateFormat("MM/dd, yy", Locale.getDefault())
         val date = format.format(current)
-        val formattedDate = format.format(messageChat.date)
+        val formattedDate = format.format(message.date)
         if(date == formattedDate)
         {
             format = SimpleDateFormat("HH.MM.SS",Locale.getDefault())
-            Text(format.format(messageChat.date), fontSize = 15.sp)
+            Text(format.format(message.date), fontSize = 15.sp)
         }
         else
             Text(formattedDate, fontSize = 15.sp)
@@ -137,7 +135,7 @@ fun ChatView(messageChat: Message) {
             shape = RoundedCornerShape(15.dp),
             backgroundColor = MaterialTheme.colors.secondary,
         ){
-            Text(messageChat.text,
+            Text(message.text,
                 Modifier.padding(10.dp,10.dp),textAlign = TextAlign.Justify)
         }
     }

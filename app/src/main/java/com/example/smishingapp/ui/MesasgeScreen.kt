@@ -33,7 +33,7 @@ fun MyAppNavHost(
     modifier: Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination:String = "All Messages",
-    messageViewModel: MessageModel
+    messageViewModel: MessageViewModel
 ){
     val messageUiState by messageViewModel.uiState.collectAsState()
 
