@@ -7,19 +7,24 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 
 @SuppressLint("PermissionLaunchedDuringComposition")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun SinglePermission() {
+fun SinglePermission(
+    messageModel: MessageModel = viewModel()
+) {
     val permissionState =
         rememberPermissionState(permission = Manifest.permission.READ_SMS)
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
 
     DisposableEffect(key1 = lifecycleOwner, effect = {
         val observer = LifecycleEventObserver { _, event ->
@@ -39,7 +44,11 @@ fun SinglePermission() {
 
     when {
         permissionState.hasPermission -> {
-            MyAppNavHost(modifier = Modifier)
+            messageModel.updateMessage(messageModel.getAllMessage(context))
+            MyAppNavHost(
+                modifier = Modifier,
+                messageViewModel = messageModel
+            )
         }
         permissionState.shouldShowRationale -> {
             Column {

@@ -10,54 +10,85 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.smishingapp.data.chat
 import com.example.smishingapp.ui.chat.ChatScreen
-import com.example.smishingapp.ui.theme.SmishingAppTheme
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 @Composable
 fun MyAppNavHost(
     modifier: Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination:String = "All Messages"
+    startDestination:String = "All Messages",
+    messageViewModel: MessageModel
 ){
+    val messageUiState by messageViewModel.uiState.collectAsState()
+
+    val onMessageClick = { address: String ->
+        messageViewModel.updateConversation(address)
+        navController.navigate("Chat")
+    }
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
         composable("All Messages"){
-            MessageScreen(modifier,navController, title = "All Messages")
+            MessageScreen(
+                modifier,
+                navController,
+                title = "All Messages",
+                messageUiState.allMessage,
+                onMessageClick
+            )
         }
         composable("Spam"){
-            MessageScreen(modifier,navController, title = "Spam")
+            MessageScreen(
+                modifier,
+                navController,
+                title = "Spam",
+                messageUiState.spam,
+                onMessageClick
+            )
         }
         composable("Ham"){
-            MessageScreen(modifier,navController, title = "Ham")
+            MessageScreen(
+                modifier,
+                navController,
+                title = "Ham",
+                messageUiState.ham,
+                onMessageClick
+            )
         }
         composable("Chat"){
-            ChatScreen(conversation = chat, navController = navController)
+            ChatScreen(
+                conversation = messageUiState.chat,
+                navController = navController
+            )
         }
     }
 }
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun MessageScreen(modifier: Modifier = Modifier,
-                  navController: NavHostController,
-                  title: String
+fun MessageScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    title: String,
+    messageList: MutableList<Message>,
+    onMessageClick:(String) ->Unit
 ){
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -90,14 +121,17 @@ fun MessageScreen(modifier: Modifier = Modifier,
             }
         },
         topBar = {
-            MessageTopAppBar(modifier, title) {
+            MessageTopAppBar(
+                modifier,
+                title
+            ) {
                 scope.launch {
                     scaffoldState.drawerState.open()
                 }
             }
         }
     ){
-        MessageList(navController)
+        MessageList(messageList,onMessageClick)
     }
 }
 
@@ -124,38 +158,32 @@ fun MessageTopAppBar(modifier: Modifier = Modifier,
     )
 }
 
-@Preview
-@Composable
-fun MessageListPreview(){
-    SmishingAppTheme {
-        // A surface container using the 'background' color from the theme
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colors.background
-        ) {
-            MessageList(navController = rememberNavController())
-        }
-    }
-}
 
 @Composable
-fun MessageList(navController: NavHostController,messageModel: MessageModel = MessageModel()) {
-    val context = LocalContext.current
-    var messageList: MutableList<Message> = messageModel.getAllMessage(context)
+fun MessageList(
+    messageList: MutableList<Message>,
+    onMessageClick: (String) -> Unit
+) {
     LazyColumn{
             messageList.forEach {message->
                 items(1) {
-                    MessageView(message = message,navController)
+                    MessageView(
+                        message = message,
+                        onMessageClick
+                    )
                 }
             }
     }
 }
 
 @Composable
-fun MessageView(message: Message,navController: NavHostController){
+fun MessageView(
+    message: Message,
+    onMessageClick: (String) -> Unit
+){
     Card(modifier = Modifier
         .padding(4.dp)
-        .clickable(onClick = { navController.navigate("Chat") }),
+        .clickable(onClick = {onMessageClick(message.sender)}),
         elevation = 4.dp) {
         Row(modifier = Modifier
             .fillMaxWidth()
@@ -174,10 +202,35 @@ fun MessageView(message: Message,navController: NavHostController){
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(message.sender,Modifier.weight(1f), fontSize = 20.sp)
-                    Text(message.type, fontSize = 15.sp)
+
+                    val current = Calendar.getInstance().time
+                    val format = SimpleDateFormat("MM/dd, yy", Locale.getDefault())
+                    val date = format.format(current)
+                    val formattedDate = format.format(message.date)
+                    if(date == formattedDate)
+                    {
+                        Text("Today", fontSize = 15.sp)
+                    }
+                    else
+                        Text(formattedDate, fontSize = 15.sp)
                 }
-                Text(message.text, fontSize = 15.sp)
+                Text(message.text, fontSize = 15.sp, maxLines = 1)
             }
         }
     }
 }
+
+
+//@Preview
+//@Composable
+//fun MessageScreenPreview(){
+//    SmashingAppTheme {
+//        // A surface container using the 'background' color from the theme
+//        Surface(
+//            modifier = Modifier.fillMaxSize(),
+//            color = MaterialTheme.colors.background
+//        ) {
+//            MyAppNavHost(modifier = Modifier)
+//        }
+//    }
+//}
