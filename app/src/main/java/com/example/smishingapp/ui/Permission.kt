@@ -6,20 +6,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.launch
 
-@SuppressLint("PermissionLaunchedDuringComposition")
+@SuppressLint("PermissionLaunchedDuringComposition", "CoroutineCreationDuringComposition")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun SinglePermission(
-    messageModel: MessageViewModel = viewModel()
+ fun SinglePermission(
+    messageModel: MessageViewModel
 ) {
     val permissionState =
         rememberPermissionState(permission = Manifest.permission.READ_SMS)
@@ -44,7 +45,10 @@ fun SinglePermission(
 
     when {
         permissionState.hasPermission -> {
-            messageModel.updateMessage(messageModel.getAllMessage(context))
+            val scope = rememberCoroutineScope()
+            scope.launch{
+                messageModel.getAllMessage(context)
+            }
             MyAppNavHost(
                 modifier = Modifier,
                 messageViewModel = messageModel

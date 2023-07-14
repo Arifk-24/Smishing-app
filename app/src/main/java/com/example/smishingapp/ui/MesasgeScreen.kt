@@ -1,6 +1,8 @@
 package com.example.smishingapp.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,14 +10,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -28,6 +29,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
+
+private fun mToast(context: Context){
+    Toast.makeText(context, "Thank you for your feedback", Toast.LENGTH_LONG).show()
+}
 @Composable
 fun MyAppNavHost(
     modifier: Modifier,
@@ -41,6 +46,11 @@ fun MyAppNavHost(
         messageViewModel.updateConversation(address)
         navController.navigate("Chat")
     }
+    val context = LocalContext.current
+    val onMenuClick = { message:Message ->
+        mToast(context)
+        messageViewModel.updateChange(message)
+    }
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -52,7 +62,8 @@ fun MyAppNavHost(
                 navController,
                 title = "All Messages",
                 messageUiState.allMessage,
-                onMessageClick
+                onMessageClick,
+                onMenuClick
             )
         }
         composable("Spam"){
@@ -61,7 +72,8 @@ fun MyAppNavHost(
                 navController,
                 title = "Spam",
                 messageUiState.spam,
-                onMessageClick
+                onMessageClick,
+                onMenuClick
             )
         }
         composable("Ham"){
@@ -70,7 +82,8 @@ fun MyAppNavHost(
                 navController,
                 title = "Ham",
                 messageUiState.ham,
-                onMessageClick
+                onMessageClick,
+                onMenuClick
             )
         }
         composable("Chat"){
@@ -87,8 +100,9 @@ fun MessageScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     title: String,
-    messageList: MutableList<Message>,
-    onMessageClick:(String) ->Unit
+    messageList:SortedSet<Message>,
+    onMessageClick:(String) ->Unit,
+    onMenuClick: (Message) -> Unit
 ){
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -131,7 +145,7 @@ fun MessageScreen(
             }
         }
     ){
-        MessageList(messageList,onMessageClick)
+        MessageList(messageList,onMessageClick,onMenuClick)
     }
 }
 
@@ -161,15 +175,17 @@ fun MessageTopAppBar(modifier: Modifier = Modifier,
 
 @Composable
 fun MessageList(
-    messageList: MutableList<Message>,
-    onMessageClick: (String) -> Unit
+    messageList: SortedSet<Message>,
+    onMessageClick: (String) -> Unit,
+    onMenuClick: (Message) -> Unit
 ) {
     LazyColumn{
             messageList.forEach {message->
                 items(1) {
                     MessageView(
                         message = message,
-                        onMessageClick
+                        onMessageClick,
+                        onMenuClick
                     )
                 }
             }
@@ -179,8 +195,10 @@ fun MessageList(
 @Composable
 fun MessageView(
     message: Message,
-    onMessageClick: (String) -> Unit
+    onMessageClick: (String) -> Unit,
+    onMenuClick: (Message) -> Unit
 ){
+    var expanded by remember{ mutableStateOf(false) }
     Card(modifier = Modifier
         .padding(4.dp)
         .clickable(onClick = {onMessageClick(message.sender)}),
@@ -201,7 +219,10 @@ fun MessageView(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(message.sender,Modifier.weight(1f), fontSize = 20.sp)
+                    if(message.name == "")
+                        Text(message.sender,Modifier.weight(1f), fontSize = 20.sp)
+                    else
+                        Text(message.name,Modifier.weight(1f), fontSize = 20.sp)
 
                     val current = Calendar.getInstance().time
                     val format = SimpleDateFormat("MM/dd, yy", Locale.getDefault())
@@ -214,7 +235,32 @@ fun MessageView(
                     else
                         Text(formattedDate, fontSize = 15.sp)
                 }
-                Text(message.text, fontSize = 15.sp, maxLines = 1)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Text(message.text, fontSize = 15.sp, maxLines = 1)
+                    Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart)) {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(onClick = { onMenuClick(message) }) {
+                                if(message.isSpam)
+                                {
+                                    Text("Mark not as Spam")
+                                }
+                                else
+                                {
+                                    Text("Mark not as Ham")
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
         }
     }

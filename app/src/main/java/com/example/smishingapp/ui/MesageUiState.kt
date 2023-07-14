@@ -1,8 +1,11 @@
 package com.example.smishingapp.ui
 
+import java.util.SortedSet
+
+
 data class MessageUiState(
-    val allMessage: MutableList<Message> = mutableListOf(),
-    val spam: MutableList<Message> = mutableListOf(),
-    val ham: MutableList<Message> = mutableListOf(),
+    val allMessage: SortedSet<Message> = sortedSetOf(dateComparator),
+    val spam: SortedSet<Message> = sortedSetOf(dateComparator),
+    val ham: SortedSet<Message> = sortedSetOf(dateComparator),
     val chat: MutableList<Message> = mutableListOf()
     )

@@ -7,13 +7,16 @@ android {
     namespace 'com.example.smishingapp'
     compileSdk 33
 
+    aaptOptions {
+        noCompress "tflite"
+    }
+
     defaultConfig {
         applicationId "com.example.smishingapp"
         minSdk 24
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
@@ -35,6 +38,7 @@ android {
     }
     buildFeatures {
         compose true
+        mlModelBinding true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.2.0'
@@ -47,6 +51,13 @@ android {
 }
 
 dependencies {
+//    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
+//    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
+//    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+
     def nav_version = "2.5.3"
     implementation 'com.google.accompanist:accompanist-permissions:0.21.1-beta'
     implementation("androidx.navigation:navigation-compose:$nav_version")
